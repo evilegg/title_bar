@@ -116,7 +116,6 @@ def main(input_image, output_image, title, subtitle, title_font, title_font_size
 
     # Save the image copy as the output image
     if not output_image:
-        print(output_image)
         path_fragments = os.path.splitext(input_image)
         output_image = ''.join((path_fragments[0], '-output', path_fragments[1]))
 

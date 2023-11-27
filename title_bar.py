@@ -1,5 +1,10 @@
-import pygame
+#!/usr/bin/python3
+"""Draw a title box on a cover image for my channel"""
+
 import os
+
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '0'
+import pygame
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)

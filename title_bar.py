@@ -1,5 +1,12 @@
 #!/usr/bin/python3
-"""Draw a title box on a cover image for my channel"""
+"""Draw a title box on a cover image for episodes in my YT streams.
+
+For now we assume a 1920x1080 image to use as the cover.
+We want to add a simple overlay to give it a little more professional a look.
+
+Not trying to spend too much time on it, though as I'm not looking for high
+production values.
+"""
 
 import base64
 from io import StringIO
@@ -21,29 +28,27 @@ SUBTITLE_SHADOW = BLACK
 
 
 def render_textbox(surface, title_font, subtitle_font, vertical_offset, title, title_font_size, subtitle, subtitle_font_size):
+
     # Set the fonts
-    font1 = pygame.freetype.Font(title_font or fonts.MINECRAFT_BOLD, title_font_size)
-    font2 = pygame.freetype.Font(subtitle_font or fonts.MINECRAFT_ITALIC, subtitle_font_size)
+    font1 = pygame.freetype.Font(title_font, title_font_size)
+    font2 = pygame.freetype.Font(subtitle_font, subtitle_font_size)
 
     # Create text surfaces
     text1, rect1 = font1.render(title, TITLE_COLOR)
     text2, rect2 = font2.render(subtitle, SUBTITLE_COLOR)
 
     # Calculate text positions
-    leading_x = 100
-    line_spacing = 91
+    leading_x = title_font_size
+    line_spacing = title_font_size
 
-    text1_x = leading_x
     text1_y = vertical_offset + line_spacing * 0.75
-
-    text2_x = leading_x
     text2_y = text1_y + line_spacing
 
-    font1.render_to(surface, (text1_x + 8, text1_y + 8), title, TITLE_SHADOW, size=title_font_size)
-    font1.render_to(surface, (text1_x, text1_y), title, TITLE_COLOR, size=title_font_size)
+    font1.render_to(surface, (leading_x + 8, text1_y + 8), title, TITLE_SHADOW, size=title_font_size)
+    font1.render_to(surface, (leading_x, text1_y), title, TITLE_COLOR, size=title_font_size)
 
-    font2.render_to(surface, (text2_x + 8, text2_y + 8), subtitle, SUBTITLE_SHADOW, size=subtitle_font_size)
-    font2.render_to(surface, (text2_x, text2_y), subtitle, SUBTITLE_COLOR, size=subtitle_font_size)
+    font2.render_to(surface, (leading_x + 8, text2_y + 8), subtitle, SUBTITLE_SHADOW, size=subtitle_font_size)
+    font2.render_to(surface, (leading_x, text2_y), subtitle, SUBTITLE_COLOR, size=subtitle_font_size)
 
 
 def render_gradient(surface, y_offset, width, height, start_alpha, end_alpha):
@@ -54,7 +59,7 @@ def render_gradient(surface, y_offset, width, height, start_alpha, end_alpha):
         overlay.set_alpha(start_alpha + (delta_alpha * y / height))
         overlay.fill(BLACK)
         surface.blit(overlay, (0, y_offset + y))
-        
+
 
 @click.command()
 @click.option('--input-image', '-i',
@@ -65,10 +70,10 @@ def render_gradient(surface, y_offset, width, height, start_alpha, end_alpha):
               type=click.Path(),
               help='Path to the output image file.')
 @click.option('--title', '-t',
-              default='This episode',
+              default='Title',
               help='The title of this episode.')
 @click.option('--subtitle', '-s',
-              default='',
+              default='Sub-Title',
               help='Useful sub-title')
 @click.option('--title-font',
               type=click.File('rb'),
@@ -85,17 +90,18 @@ def render_gradient(surface, y_offset, width, height, start_alpha, end_alpha):
               default=45,
               help='Font size for the subtitle.')
 def main(input_image, output_image, title, subtitle, title_font, title_font_size, subtitle_font, subtitle_font_size):
-    # Initialize Pygame
-    pygame.init()
 
-    # Set a dummy display mode to avoid "No video mode has been set" error
+    # Argument validation
+    title_font = title_font or fonts.MINECRAFT_BOLD
+    subtitle_font = subtitle_font or fonts.MINECRAFT_ITALIC
+
+    # Initialize pygame and set a dummy display mode to avoid "No video mode has been set" error
+    pygame.init()
     dummy_size = (1, 1)
     pygame.display.set_mode(dummy_size)
 
-    # Load the initial image
+    # Load the initial image and get its dimensions
     image = pygame.image.load(input_image).convert_alpha()
-
-    # Get image dimensions
     image_width, image_height = image.get_size()
 
     # Create a surface for the overlay at the bottom with varying opacity

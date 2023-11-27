@@ -68,7 +68,7 @@ def render_gradient(surface, y_offset, width, height, start_alpha, end_alpha):
               help='Path to the input image file.')
 @click.option('--output-image', '-o',
               type=click.Path(),
-              help='Path to the output image file.')
+              help='Path to write the output image to.')
 @click.option('--title', '-t',
               default='Title',
               help='The title of this episode.')

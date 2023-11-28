@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """Draw a title box on a cover image for episodes in my YT streams.
 
 For now we assume a 1920x1080 image to use as the cover.
@@ -62,19 +62,9 @@ def render_gradient(surface, y_offset, width, height, start_alpha, end_alpha):
 
 
 @click.command()
-@click.option('--input-image', '-i',
-              type=click.Path(exists=True),
-              default="path/to/your/image.jpg",
-              help='Path to the input image file.')
-@click.option('--output-image', '-o',
-              type=click.Path(),
-              help='Path to write the output image to.')
-@click.option('--title', '-t',
-              default='Title',
-              help='The title of this episode.')
-@click.option('--subtitle', '-s',
-              default='Sub-Title',
-              help='Useful sub-title')
+@click.argument('input_image', type=click.Path(exists=True))
+@click.option('--title',
+              help='The title and subtitle in one command line option, separate with "|"')
 @click.option('--title-font',
               type=click.File('rb'),
               help='Path to an optional font file to use for the title.')
@@ -89,7 +79,14 @@ def render_gradient(surface, y_offset, width, height, start_alpha, end_alpha):
               type=int,
               default=45,
               help='Font size for the subtitle.')
-def main(input_image, output_image, title, subtitle, title_font, title_font_size, subtitle_font, subtitle_font_size):
+def main(input_image, title, title_font, title_font_size, subtitle_font, subtitle_font_size):
+
+    output_ext = os.path.splitext(input_image)[-1]
+    output_fname = f'{title}{output_ext.lower()}'
+
+    subtitle = ''
+    if '|' in title:
+        title, subtitle = title.split(' | ')
 
     # Argument validation
     title_font = title_font or fonts.MINECRAFT_BOLD
@@ -115,11 +112,7 @@ def main(input_image, output_image, title, subtitle, title_font, title_font_size
     render_textbox(image, title_font, subtitle_font, title_box_y_offset, title, title_font_size, subtitle, subtitle_font_size)
 
     # Save the image copy as the output image
-    if not output_image:
-        path_fragments = os.path.splitext(input_image)
-        output_image = ''.join((path_fragments[0], '-output', path_fragments[1]))
-
-    pygame.image.save(image, output_image)
+    pygame.image.save(image, output_fname)
 
     # Quit Pygame
     pygame.quit()
